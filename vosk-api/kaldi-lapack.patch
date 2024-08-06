@@ -1,0 +1,34 @@
+diff -ur vosk-api-0.3.45.orig/kaldi/src/configure vosk-api-0.3.45/kaldi/src/configure
+--- vosk-api-0.3.45.orig/kaldi/src/configure	2022-11-19 05:23:44.000000000 +0530
++++ vosk-api-0.3.45/kaldi/src/configure	2024-07-31 15:14:28.465723341 +0530
+@@ -834,7 +834,7 @@
+ 
+ # Validate the (optionally) provided MATHLIB value.
+ case $MATHLIB in
+-  ''|ATLAS|CLAPACK|MKL|OPENBLAS|OPENBLAS_CLAPACK) : ;;
++  ''|ATLAS|CLAPACK|MKL|OPENBLAS|OPENBLAS_CLAPACK|OPENBLAS_NO_F2C) : ;;
+   *) failure "Unknown --mathlib='${MATHLIB}'. Supported libs: ATLAS CLAPACK MKL OPENBLAS" ;;
+ esac
+ 
+@@ -1301,7 +1301,7 @@
+     esac >> kaldi.mk
+ 
+     echo "Successfully configured for Linux with OpenBLAS from $OPENBLASROOT"
+-  elif [ "$MATHLIB" == "OPENBLAS_CLAPACK" ]; then
++  elif [ "$MATHLIB" == "OPENBLAS_CLAPACK" ] || [ "$MATHLIB" == "OPENBLAS_NO_F2C" ]; then
+     if [[ ! $OPENBLASROOT ]]; then
+       # Either the user specified --mathlib=OPENBLAS or we've autodetected the
+       # system where OpenBLAS is the preferred option (the parser for
+@@ -1345,7 +1345,11 @@
+       OPENBLASINCDIR="/usr/include"
+     fi
+     echo "Your math library seems to be OpenBLAS from $OPENBLASROOT.  Configuring appropriately."
+-    OPENBLASLIBS="-L$OPENBLASLIBDIR -l:libopenblas.a -l:libblas.a -l:liblapack.a -l:libf2c.a"
++    if [ "$MATHLIB" == "OPENBLAS_CLAPACK" ]; then
++        OPENBLASLIBS="-L$OPENBLASLIBDIR -l:libopenblas.a -l:libblas.a -l:liblapack.a -l:libf2c.a"
++    else
++        OPENBLASLIBS="-L$OPENBLASLIBDIR -l:libopenblas.a -l:libblas.a -l:liblapack.a"
++    fi
+     echo "OPENBLASINC = $OPENBLASINCDIR" >> kaldi.mk
+     echo "OPENBLASLIBS = $OPENBLASLIBS" >> kaldi.mk
+     echo >> kaldi.mk

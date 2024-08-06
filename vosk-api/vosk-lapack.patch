@@ -1,0 +1,31 @@
+diff -ur vosk-api-0.3.45.orig/src/Makefile vosk-api-0.3.45/src/Makefile
+--- vosk-api-0.3.45.orig/src/Makefile	2022-12-14 22:28:40.000000000 +0530
++++ vosk-api-0.3.45/src/Makefile	2024-07-31 15:45:47.999776381 +0530
+@@ -6,7 +6,7 @@
+ CUDA_ROOT?=/usr/local/cuda
+ USE_SHARED?=0
+ # Math libraries
+-HAVE_OPENBLAS_CLAPACK?=1
++HAVE_OPENBLAS_NO_F2C?=0
+ HAVE_MKL?=0
+ HAVE_ACCELERATE=0
+ HAVE_CUDA?=0
+@@ -80,6 +80,18 @@
+     endif
+ endif
+ 
++ifeq ($(HAVE_OPENBLAS_NO_F2C), 1)
++    CFLAGS += -I$(OPENBLAS_ROOT)/include
++    ifeq ($(USE_SHARED), 0)
++        LIBS += \
++            $(OPENBLAS_ROOT)/lib/libopenblas.a \
++            $(OPENBLAS_ROOT)/lib/liblapack.a \
++            $(OPENBLAS_ROOT)/lib/libblas.a
++    else
++        LDFLAGS += -lopenblas -llapack -lblas
++    endif
++endif
++
+ ifeq ($(HAVE_MKL), 1)
+     CFLAGS += -DHAVE_MKL=1 -I$(MKL_ROOT)/include
+     LDFLAGS += -L$(MKL_ROOT)/lib/intel64 -Wl,-rpath=$(MKL_ROOT)/lib/intel64 -lmkl_rt -lmkl_intel_lp64 -lmkl_core -lmkl_sequential

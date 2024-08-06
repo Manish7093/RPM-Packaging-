@@ -1,0 +1,14 @@
+diff -ur vosk-api-0.3.45.orig/src/Makefile vosk-api-0.3.45/src/Makefile
+--- vosk-api-0.3.45.orig/src/Makefile	2022-12-14 22:28:40.000000000 +0530
++++ vosk-api-0.3.45/src/Makefile	2024-07-31 20:39:57.170294213 +0530
+@@ -56,8 +56,8 @@
+         $(KALDI_ROOT)/src/fstext/kaldi-fstext.a \
+         $(KALDI_ROOT)/src/util/kaldi-util.a \
+         $(KALDI_ROOT)/src/base/kaldi-base.a \
+-        $(OPENFST_ROOT)/lib/libfst.a \
+-        $(OPENFST_ROOT)/lib/libfstngram.a
++        $(OPENFST_ROOT)/lib/libfst.so \
++        $(OPENFST_ROOT)/lib/libfstngram.so
+ else
+     LDFLAGS += \
+         -L$(KALDI_ROOT)/libs \

@@ -1,3 +1,4 @@
+%global debug_package %{nil}
 Name:           vosk-api
 Version:        0.3.45
 Release:        1%{?dist}
@@ -9,9 +10,18 @@ Source0:        https://github.com/alphacep/vosk-api/archive/v%{version}/vosk-ap
 Source1:        https://github.com/alphacep/kaldi/archive/93ef0019b847272a239fbb485ef97f29feb1d587.tar.gz
 Source2:        https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
 Patch0: kaldi-fst.patch
+Patch1: kaldi-lapack.patch
+Patch2: kaldi-openblas.patch
+Patch3: vosk-lapack.patch
+Patch4: vosk-lib_fst.patch
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  make
+
+BuildRequires:  blas-static
+BuildRequires:  lapack-static
+BuildRequires:  openblas-static
+BuildRequires:  openfst-tools
 BuildRequires:  blas-devel
 BuildRequires:  lapack-devel
 BuildRequires:  openblas-devel
@@ -36,6 +46,10 @@ tar -xzf %{SOURCE1}
 mv kaldi-93ef0019b847272a239fbb485ef97f29feb1d587 kaldi
 
 %patch -P0 -p1
+%patch -P1 -p1
+%patch -P2 -p1
+%patch -P3 -p1
+%patch -P4 -p1
 
 cd kaldi/tools
 mkdir -p OpenBLAS/install/lib
@@ -47,17 +61,17 @@ ln -sf %{_libdir}/* openfst/lib
 
 %build
 cd kaldi/src
-./configure --mathlib=OPENBLAS --shared --use-cuda=no
-#./configure --mathlib=OPENBLAS_NO_F2C --shared --use-cuda=no
+#./configure --mathlib=OPENBLAS --shared --use-cuda=no
+./configure --mathlib=OPENBLAS_NO_F2C --shared --use-cuda=no
 make online2 lm rnnlm
 
 cd %{_builddir}/vosk-api-%{version}/src
-make KALDI_ROOT=../../kaldi HAVE_OPENBLAS_NO_F2C=1 HAVE_OPENBLAS_CLAPACK=0
+make KALDI_ROOT=../kaldi HAVE_OPENBLAS_NO_F2C=1 HAVE_OPENBLAS_CLAPACK=0
 
 %install
 # Install vosk-api headers and library
-install -Dpm 644 vosk_api.h %{buildroot}%{_includedir}/vosk_api.h
-install -Dpm 755 libvosk.so %{buildroot}%{_libdir}/libvosk.so
+install -Dpm 644 %{_builddir}/vosk-api-%{version}/src/vosk_api.h %{buildroot}%{_includedir}/vosk_api.h
+install -Dpm 755 %{_builddir}/vosk-api-%{version}/src/libvosk.so %{buildroot}%{_libdir}/libvosk.so
 
 # Install model
 mkdir -p %{buildroot}%{_datadir}/vosk-models
@@ -72,7 +86,7 @@ make LDFLAGS="-fopenmp -L../src -lvosk -ldl -lpthread -Wl,-rpath,../src"
 ./test_vosk | grep -q '"text" : "zero one eight zero three"'
 
 %files
-%license LICENSE
+%license COPYING
 %doc README.md
 %{_includedir}/vosk_api.h
 %{_libdir}/libvosk.so
