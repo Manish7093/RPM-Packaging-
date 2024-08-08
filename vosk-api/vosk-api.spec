@@ -3,7 +3,7 @@ Name:           vosk-api
 Version:        0.3.45
 Release:        1%{?dist}
 Summary:        Offline speech recognition toolkit
-
+ExclusiveArch:  x86_64 aarch64 ppc64le
 License:        ASL 2.0
 URL:            https://alphacephei.com/vosk
 Source0:        https://github.com/alphacep/vosk-api/archive/v%{version}/vosk-api-%{version}.tar.gz
@@ -14,10 +14,10 @@ Patch1: kaldi-lapack.patch
 Patch2: kaldi-openblas.patch
 Patch3: vosk-lapack.patch
 Patch4: vosk-lib_fst.patch
+
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  make
-
 BuildRequires:  blas-static
 BuildRequires:  lapack-static
 BuildRequires:  openblas-static
@@ -29,10 +29,17 @@ BuildRequires:  openfst-devel
 BuildRequires:  unzip
 
 %description
-Vosk is an offline speech recognition toolkit.
+Vosk is an offline open source speech recognition toolkit.
+
+%package devel
+Summary: vosk-api development libraries
+Requires: %{name}%{?_isa} = %{version}-%{release}
+ 
+%description devel
+vosk-api development libraries
 
 %package -n vosk-model-small-en-us
-Summary:        Lightweight English language model
+Summary: Lightweight English language model
 
 %description -n vosk-model-small-en-us
 Lightweight English language model for Vosk.
@@ -40,7 +47,6 @@ Lightweight English language model for Vosk.
 %prep
 %setup -q -a1
 tar -xzf %{SOURCE1}
-
 
 # Move and setup Kaldi
 mv kaldi-93ef0019b847272a239fbb485ef97f29feb1d587 kaldi
@@ -61,7 +67,6 @@ ln -sf %{_libdir}/* openfst/lib
 
 %build
 cd kaldi/src
-#./configure --mathlib=OPENBLAS --shared --use-cuda=no
 ./configure --mathlib=OPENBLAS_NO_F2C --shared --use-cuda=no
 make online2 lm rnnlm
 
@@ -88,6 +93,8 @@ make LDFLAGS="-fopenmp -L../src -lvosk -ldl -lpthread -Wl,-rpath,../src"
 %files
 %license COPYING
 %doc README.md
+
+%files devel
 %{_includedir}/vosk_api.h
 %{_libdir}/libvosk.so
 
@@ -96,5 +103,4 @@ make LDFLAGS="-fopenmp -L../src -lvosk -ldl -lpthread -Wl,-rpath,../src"
 
 %changelog
 * Mon Jul 29 2024 Manish Tiwari <matiwari@redhat.com> - 0.3.45-1
-- Initial package
-
+- Initial package release
